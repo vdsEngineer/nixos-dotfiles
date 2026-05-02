@@ -7,9 +7,14 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
+
+    noctalia = {
+        url = "github:noctalia-dev/noctalia-shell";
+        inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, ... }@inputs: 
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager,  noctalia,  ... }@inputs: 
     let
       system = "x86_64-linux";
 
@@ -38,6 +43,7 @@
             home-manager.extraSpecialArgs = { 
               inherit inputs myUserName; 
               unstable = pkgs-unstable; 
+              noctalia = noctalia;
             };
             
             home-manager.users.${myUserName} = import ./home.nix;

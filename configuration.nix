@@ -36,6 +36,17 @@
     };
   };
 
+  systemd.services.greetd.serviceConfig = {
+    Type = "idle";
+    StandardInput = "tty";
+    StandardOutput = "tty";
+    StandardError = "journal"; 
+    TTYReset = true;
+    TTYVHangup = true;
+    TTYVTDisallocate = true;
+  };
+
+
   # --- NETWORKING ---
   networking = {
     hostName = "nixos";
@@ -77,7 +88,6 @@
     git
     wget
     htop  
-    dunst
     wireguard-tools
     alacritty
     unzip
@@ -86,6 +96,7 @@
     duf
     gdu
     xray
+    greetd
   ];
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
@@ -97,6 +108,7 @@
 
   # --- PROGRAMS ---
   programs = {
+    niri.enable = true;
     zsh.enable = true;
     throne = {
       enable = true;
@@ -104,27 +116,34 @@
     };
   };
 
-  # --- GRAPHICS & DESKTOP (GNOME) ---
   hardware.graphics.enable = true;
 
-  services.xserver.xkb = {
-    layout = "us,ru";
-    options = "grp:alt_shift_toggle";
-    variant = "";
+  console = {
+    useXkbConfig = true; 
   };
 
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-  
-  # Disable unnecessary GNOME bloatware
-  services.gnome = {
-    core-apps.enable = false;
-    localsearch.enable = false;
-    tinysparql.enable = false;
+
+  services = {
+    xserver = {
+      enable = false;
+      xkb = {
+        layout = "us,ru";
+        options = "grp:alt_shift_toggle";
+      };
+    };
+
+    greetd = {
+      enable = true;
+      settings = {
+        default_session = {
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd niri-session";
+          user = "greeter";
+        };
+      };
+    };
+
   };
 
-  # --- BACKGROUND SERVICES ---
-  services.v2raya.enable = true;
   virtualisation.docker.enable = true;
 
   system.stateVersion = "25.05"; 

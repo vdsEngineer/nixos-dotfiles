@@ -1,4 +1,4 @@
-{ config, unstable, pkgs, inputs, myUserName, ... }:
+{ config, unstable, pkgs, inputs, myUserName, noctalia, ... }:
 
 {
   #  Basic user Information
@@ -11,6 +11,11 @@
 
   # --- Packages ---
   home.packages = [
+    # Noctalia
+    noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default
+
+    pkgs.fuzzel
+    
     # Browser from inputs
     inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default
     
@@ -90,6 +95,125 @@
   home.sessionVariables = {
     EDITOR = "nvim";
   };
+
+  xdg.configFile."niri/config.kdl".text = ''
+      // --- АВТОЗАПУСК ---
+      spawn-at-startup "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
+      spawn-at-startup "noctalia-shell"
+
+      // Отключаем стартовую табличку с подсказками
+      prefer-no-csd
+      hotkey-overlay {
+          skip-at-startup
+      }
+
+      // --- НАСТРОЙКИ ВВОДА ---
+      input {
+          keyboard {
+              xkb {
+                  layout "us,ru"
+                  options "grp:alt_shift_toggle"
+              }
+          }
+          touchpad {
+              tap
+              natural-scroll
+          }
+      }
+
+      // --- ВНЕШНИЙ ВИД ОКОН ---
+      layout {
+          gaps 16 // Отступы между окнами
+
+          // Настройки обводки (border)
+          border {
+              off         // Выключаем стандартную обводку
+          }
+
+          // Вместо стандартной обводки используем focus-ring (она выглядит современнее и поддерживает скругления)
+          focus-ring {
+              width 2      // Сделали обводку тонкой (2 пикселя)
+              
+              // Цвет активного окна (замени HEX на тот, который тебе больше нравится, сейчас стоит синий)
+              active-color "#89b4fa" 
+              
+              // Цвет неактивного окна (серый/полупрозрачный)
+              inactive-color "#45475a"
+          }
+
+          // Скругление углов у окон (радиус в пикселях)
+          struts {
+              left 0
+              right 0
+              top 0
+              bottom 0
+          }
+      }
+      
+      // Анимации Niri (делаем их чуть быстрее и плавнее)
+      animations {
+          window-open {
+              duration-ms 200
+              curve "ease-out-expo"
+          }
+      }
+
+      // Окно настроек скруглений (нужно вынести из layout)
+      window-rule {
+          geometry-corner-radius 12 // Скругление углов окон
+          clip-to-geometry true     // Обрезать содержимое по скругленным углам
+      }
+
+      // --- ГОРЯЧИЕ КЛАВИШИ (BINDS) ---
+      binds {
+          // --- Базовые программы ---
+          Mod+Return { spawn "alacritty"; }
+          Mod+D { spawn "fuzzel"; }
+          Mod+B { spawn "zen"; }
+          Mod+Q { close-window; }
+          Mod+Shift+E { quit; }
+
+          // Экран блокировки
+          Mod+L { spawn "loginctl" "lock-session"; }
+
+          // --- Навигация фокуса (Перемещение взгляда) ---
+          Mod+Left  { focus-column-left; }
+          Mod+Right { focus-column-right; }
+          Mod+Up    { focus-window-up; }
+          Mod+Down  { focus-window-down; }
+
+          // --- Перемещение самих окон (Двигаем окна по экрану) ---
+          Mod+Shift+Left  { move-column-left; }
+          Mod+Shift+Right { move-column-right; }
+          Mod+Shift+Up    { move-window-up; }
+          Mod+Shift+Down  { move-window-down; }
+
+          // --- Навигация по рабочим столам (Workspaces) ---
+          Mod+Page_Down { focus-workspace-down; }
+          Mod+Page_Up   { focus-workspace-up; }
+          // Перенести окно на другой рабочий стол
+          Mod+Shift+Page_Down { move-column-to-workspace-down; }
+          Mod+Shift+Page_Up   { move-column-to-workspace-up; }
+
+          // --- Управление шириной колонок ---
+          Mod+F { maximize-column; } // Развернуть окно на весь экран
+          Mod+W { switch-preset-column-width; } // Циклично менять ширину окна (1/3, 1/2, 2/3)
+
+          // --- ВКЛАДКИ (Stacking / Consume) ---
+          // Объединить окна (вкладки)
+          Mod+T { consume-or-expel-window-left; }
+          Mod+Y { consume-or-expel-window-right; }
+          
+          // --- Floating (Плавающие окна) ---
+          // Сделать окно плавающим (отвязать от сетки)
+          Mod+Space { toggle-window-floating; }
+          Mod+Shift+Space { switch-focus-between-floating-and-tiling; }
+
+          // --- Обзор (Overview) ---
+          // Показать все рабочие столы (как в GNOME)
+          Mod+Tab { toggle-overview; }
+      }
+    '';
 
   # --- Programs ---
   programs = {
