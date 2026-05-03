@@ -131,6 +131,23 @@
           clip-to-geometry true     // Crop the content at rounded corners
       }
 
+      // --- SETTING UP MONITORS ---
+      output "HDMI-A-1" {
+          // Включаем максимальную доступную герцовку из твоего списка
+          mode "3440x1440@100.000"
+          
+          // Ставим его самым первым (слева)
+          position x=0 y=0
+      }
+
+      output "eDP-1" {
+          // Оставляем родные 144 Гц
+          mode "1920x1080@144.000"
+          
+          // Сдвигаем его вправо ровно на ширину первого монитора (3440)
+          position x=3440 y=0
+      }
+
       // --- BINDS ---
       binds {
           // --- Basic programs ---
