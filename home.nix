@@ -64,6 +64,16 @@
     EDITOR = "nvim";
     _JAVA_AWT_WM_NONREPARENTING = "1";
   };
+  
+  xdg.desktopEntries.phpstorm = {
+    name = "PhpStorm";
+    genericName = "PHP IDE";
+    exec = "phpstorm -Dawt.toolkit.name=WLToolkit %f";
+    icon = "phpstorm";
+    terminal = false;
+    categories = [ "Development" "IDE" ];
+    type = "Application";
+  };
 
   xdg.configFile."niri/config.kdl".text = ''
       // --- AUTO-START ---
