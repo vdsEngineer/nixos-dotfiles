@@ -14,8 +14,6 @@
     # Noctalia
     noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default
 
-    pkgs.fuzzel
-    
     # Browser from inputs
     inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default
     
@@ -31,10 +29,6 @@
     pkgs.nautilus
     pkgs.obsidian
     pkgs.todoist-electron
-    
-    # GNOME Extensions
-    pkgs.gnomeExtensions.pop-shell
-    pkgs.gnomeExtensions.vertical-workspaces
     
     # Development and terminal
     pkgs.zellij
@@ -55,33 +49,7 @@
     pkgs.throne   # VPN UI
   ];
 
-  # --- GNOME and GTK Settings ---
-  dconf.settings = {
-    "org/gnome/shell" = {
-      enabled-extensions = [
-        "pop-shell@system76.com"
-        "vertical-workspaces@G-dH.github.com"
-      ];
-    };
-    "org/gnome/shell/extensions/pop-shell" = {};
-  };
-
-  gtk = {
-    enable = true;
-    theme = {
-      package = pkgs.pop-gtk-theme;
-      name = "Pop-dark";
-    };
-    iconTheme = {
-      package = pkgs.adwaita-icon-theme;
-      name = "Adwaita";
-    };
-    font = {
-      name = "JetBrainsMono Nerd Font";
-      size = 11;
-    };
-  };
-
+  # --- GTK PointerCursor ---
   home.pointerCursor = {
     gtk.enable = true;
     name = "Bibata-Modern-Classic";
@@ -98,7 +66,6 @@
 
   xdg.configFile."niri/config.kdl".text = ''
       // --- АВТОЗАПУСК ---
-      spawn-at-startup "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
       spawn-at-startup "noctalia-shell"
 
       // Отключаем стартовую табличку с подсказками
@@ -123,7 +90,7 @@
 
       // --- ВНЕШНИЙ ВИД ОКОН ---
       layout {
-          gaps 16 // Отступы между окнами
+          gaps 14 // Отступы между окнами
 
           // Настройки обводки (border)
           border {
@@ -168,7 +135,7 @@
       binds {
           // --- Базовые программы ---
           Mod+Return { spawn "alacritty"; }
-          Mod+D { spawn "fuzzel"; }
+          Mod+D { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
           Mod+B { spawn "zen"; }
           Mod+Q { close-window; }
           Mod+Shift+E { quit; }
