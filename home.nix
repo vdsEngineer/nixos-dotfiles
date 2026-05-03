@@ -62,6 +62,7 @@
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    _JAVA_AWT_WM_NONREPARENTING = "1";
   };
 
   xdg.configFile."niri/config.kdl".text = ''
@@ -141,11 +142,11 @@
           Mod+Shift+E { quit; }
 
           // Экран блокировки
-          Mod+L { spawn "loginctl" "lock-session"; }
+          Mod+Shift+l { spawn "loginctl" "lock-session"; }
 
           // --- Навигация фокуса (Перемещение взгляда) ---
-          Mod+Left  { focus-column-left; }
-          Mod+Right { focus-column-right; }
+          Mod+h  { focus-column-left; }
+          Mod+l { focus-column-right; }
           Mod+Up    { focus-window-up; }
           Mod+Down  { focus-window-down; }
 
@@ -156,8 +157,8 @@
           Mod+Shift+Down  { move-window-down; }
 
           // --- Навигация по рабочим столам (Workspaces) ---
-          Mod+Page_Down { focus-workspace-down; }
-          Mod+Page_Up   { focus-workspace-up; }
+          Mod+j { focus-workspace-down; }
+          Mod+k   { focus-workspace-up; }
           // Перенести окно на другой рабочий стол
           Mod+Shift+Page_Down { move-column-to-workspace-down; }
           Mod+Shift+Page_Up   { move-column-to-workspace-up; }
