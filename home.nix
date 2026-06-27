@@ -19,8 +19,7 @@
     
     # Unstable channel
     unstable.jetbrains.phpstorm
-    unstable.antigravity
-    
+
     # System and work utilities
     pkgs.keepassxc
     pkgs.yazi
@@ -29,6 +28,7 @@
     pkgs.nautilus
     pkgs.obsidian
     pkgs.todoist-electron
+    pkgs.mtr
     
     # Development and terminal
     pkgs.zellij
@@ -47,6 +47,10 @@
     
     pkgs.gnumeric # xlsx viewer GUI
     pkgs.throne   # VPN UI
+    
+    # AI client 
+    pkgs.opencode
+
   ];
 
   # --- GTK PointerCursor ---
@@ -63,6 +67,14 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     _JAVA_AWT_WM_NONREPARENTING = "1";
+
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    LIBVA_DRIVER_NAME = "nvidia";
+
+    WLR_NO_HARDWARE_CURSORS = "1";
+    XCURSOR_SIZE = "24"; 
+    XCURSOR_THEME = "Adwaita";
   };
 
   xdg.configFile."niri/config.kdl".text = ''
@@ -78,7 +90,7 @@
           keyboard {
               xkb {
                   layout "us,ru"
-                  options "grp:alt_shift_toggle"
+                  options "grp:win_space_toggle"
               }
           }
           touchpad {
@@ -89,6 +101,7 @@
 
       layout {
           gaps 14 
+          center-focused-column "never"
 
           border {
               off
@@ -111,8 +124,24 @@
       // Animations Niri 
       animations {
           window-open {
-              duration-ms 200
-              curve "ease-out-expo"
+              duration-ms 130
+              curve "ease-out-quad"
+          }
+          workspace-switch {
+              duration-ms 130
+              curve "ease-out-quad"
+          }
+          horizontal-view-movement {
+              duration-ms 130 
+              curve "ease-out-quad" 
+          }
+          window-close {
+              duration-ms 130
+              curve "ease-out-quad"
+          }
+          window-resize {
+              duration-ms 130  
+              curve "ease-out-quad" 
           }
       }
 
@@ -121,6 +150,33 @@
           clip-to-geometry true     // Crop the content at rounded corners
       }
 
+<<<<<<< Updated upstream
+=======
+      // --- SETTING UP MONITORS ---
+      output "DP-9" {
+          // Включаем максимальную доступную герцовку из твоего списка
+          mode "3440x1440@100.000"
+
+          // Ставим его самым первым (слева)
+          position x=0 y=0
+      }
+      output "DP-1" {
+          // Включаем максимальную доступную герцовку из твоего списка
+          mode "3440x1440@100.000"
+
+          // Ставим его самым первым (слева)
+          position x=0 y=0
+      }
+
+      output "eDP-1" {
+          // Оставляем родные 144 Гц
+          mode "1920x1080@144.000"
+          
+          // Сдвигаем его вправо ровно на ширину первого монитора (3440)
+          position x=3440 y=0
+      }
+
+>>>>>>> Stashed changes
       // --- BINDS ---
       binds {
           // --- Basic programs ---
@@ -129,6 +185,9 @@
           Mod+B { spawn "zen"; }
           Mod+Q { close-window; }
           Mod+Shift+E { quit; }
+          Mod+S { screenshot; }
+          Print { screenshot-screen; }
+
 
           // Lock session
           Mod+Shift+l { spawn "loginctl" "lock-session"; }
@@ -161,8 +220,8 @@
           Mod+Y { consume-or-expel-window-right; }
           
           // --- Floating ---
-          Mod+Space { toggle-window-floating; }
-          Mod+Shift+Space { switch-focus-between-floating-and-tiling; }
+          Mod+M { toggle-window-floating; }
+          Mod+Shift+M { switch-focus-between-floating-and-tiling; }
 
           // --- (Overview) ---
           Mod+Tab { toggle-overview; }

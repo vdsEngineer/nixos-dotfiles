@@ -9,6 +9,18 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelModules = [ "tun" ];
+  boot.kernelPackages = pkgs.linuxPackages_zen;
+  boot.kernelParams = [
+    "nvidia.NVreg_DynamicPowerManagement=0x00"
+    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"   
+    "nvidia.NVreg_EnableS0ixPowerManagement=0"
+    "pcie_aspm=off" 
+    "nvidia-drm.fbdev=1"
+  ];
+
+  systemd.tmpfiles.rules = [
+    "d /var/log/atop 0755 root root 7d"
+  ];
 
   # --- SYSTEM SERVICES (VPN) ---
   systemd.services.throne-auto-load = {
@@ -36,6 +48,23 @@
     };
   };
 
+systemd.services.nvidia-clock-lock = {
+    description = "Lock NVIDIA GPU clocks to prevent Niri Wayland stuttering";
+    
+    wantedBy = [ "multi-user.target" ];
+    
+    after = [ "systemd-modules-load.service" ]; 
+
+    serviceConfig = {
+      Type = "oneshot"; 
+      User = "root";    
+      ExecStartPre = "-${config.hardware.nvidia.package.bin}/bin/nvidia-smi -rgc";
+      ExecStart = "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -lgc 450,600";
+      ExecStartPost = "${config.hardware.nvidia.package.bin}/bin/nvidia-smi -pl 12";
+      RemainAfterExit = true;
+    };
+  };
+
   systemd.services.greetd.serviceConfig = {
     Type = "idle";
     StandardInput = "tty";
@@ -52,7 +81,13 @@
     hostName = "nixos";
     networkmanager.enable = true;
     nameservers = [ "8.8.8.8" "1.1.1.1" ];
-    firewall.allowedUDPPorts = [ 51820 ]; # Open port for WireGuard
+    firewall.allowedUDPPorts = [ 51820 19999 ]; # Open port for WireGuard
+    firewall.trustedInterfaces = [ "docker0" ];
+    firewall.extraCommands = ''
+      iptables -I INPUT -i br-+ -j ACCEPT
+      iptables -I FORWARD -i br-+ -j ACCEPT
+      iptables -t nat -A POSTROUTING -s 172.16.0.0/12 -o wlp4s0 -j MASQUERADE
+    '';
   };
 
   # --- TIMEZONE & LOCALES ---
@@ -97,9 +132,18 @@
     gdu
     xray
     greetd
+    steam-run
   ];
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  environment.variables = {
+      WLR_NO_HARDWARE_CURSORS = "1";
+      NVD_BACKEND = "direct";
+      ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+      ELECTRON_ENABLE_WAYLAND = "1";
+      NIRI_DEBUG_RENDER_OFFSCREEN = "1";
+  };
 
   fonts.packages = with pkgs; [
     font-awesome
@@ -114,9 +158,37 @@
       enable = true;
       tunMode.enable = true; 
     };
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+
+    atop = {
+        enable = true;
+    };
   };
 
   hardware.graphics.enable = true;
+  
+  hardware.nvidia = {
+    modesetting.enable = true;
+
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+    powerManagement.enable = false; 
+    powerManagement.finegrained = false;
+
+    open = true;
+
+    nvidiaSettings = true;
+    nvidiaPersistenced = true;
+
+    prime = {
+      sync.enable = true;
+      nvidiaBusId = "PCI:1:0:0"; 
+      amdgpuBusId = "PCI:6:0:0";
+    };
+  };
 
   console = {
     useXkbConfig = true; 
@@ -124,8 +196,12 @@
 
 
   services = {
+    udisks2.enable = true;
+    gvfs.enable = true;
+
     xserver = {
       enable = false;
+      videoDrivers = [ "nvidia" ];
       xkb = {
         layout = "us,ru";
         options = "grp:alt_shift_toggle";
@@ -145,6 +221,12 @@
   };
 
   virtualisation.docker.enable = true;
+
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd"; 
+    memoryPercent = 100;
+  };
 
   system.stateVersion = "25.05"; 
 }
